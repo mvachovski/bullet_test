@@ -22,7 +22,7 @@ void initGLScene()
 	glutInitContextVersion(4, 3);
 	glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
 
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowSize(500, 500);
 	glutInitWindowPosition (100, 100);
 	glutCreateWindow("Bullet simulation");
@@ -33,8 +33,13 @@ void initGLScene()
 //	glutTimerFunc(500, timer_function, 1);
 	glutIdleFunc(idle_function);
 
+	glDepthFunc(GL_LESS);
+	glEnable(GL_DEPTH_TEST);
+
 	glewExperimental = GL_TRUE;
 	glewInit();
+
+//	glDisable(GL_CULL_FACE_MODE);
 
 	glClearColor(1.0, 1.0, 1.0, 0.0);
 //	glDepthFunc(GL_NEVER);
@@ -46,7 +51,7 @@ void drawScene()
 	printf("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);
 
 
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
 	gluLookAt(.0, vert, 20.0, 0. , 0.0, 0. , 0.0, 1.0, 0.0);
@@ -149,8 +154,47 @@ void drawPrimitive(btCollisionObject *p)
 	if(pBox)
 	{
 		btVector3 extensions = pBox->getHalfExtentsWithMargin();
-		glColor3f(.5, 0.5, 0.5);
-		glutWireCube(extensions.getX() * 2);
+//		glutWireCube(extensions.getX() * 2);
+
+		glBegin(GL_QUADS);
+		// upper and lower walls
+
+//		// left and right walls
+		for(int i = -1; i < 2; i+=2)
+		{
+			glColor3f(0, i > 0 ? 1 : 0.5, 0);
+//			glBegin(GL_LINE_LOOP);
+			glVertex3f(i * extensions.getX(), -extensions.getY(), -extensions.getZ());
+			glVertex3f(i * extensions.getX(), -extensions.getY(), extensions.getZ());
+			glVertex3f(i * extensions.getX(), extensions.getY(), extensions.getZ());
+			glVertex3f(i * extensions.getX(), extensions.getY(), -extensions.getZ());
+//			glEnd();
+		}
+
+		for(int i = -1; i < 2; i+=2)
+		{
+			glColor3f(i > 0 ? 1 : 0.5, 0, 0);
+//			glBegin(GL_LINE_LOOP);
+			glVertex3f(-extensions.getX(), i * extensions.getY(), -extensions.getZ());
+			glVertex3f(extensions.getX(), i * extensions.getY(), -extensions.getZ());
+			glVertex3f(extensions.getX(), i * extensions.getY(), extensions.getZ());
+			glVertex3f(-extensions.getX(), i * extensions.getY(), extensions.getZ());
+//			glEnd();
+		}
+//
+//		// back and forth walls
+//		for(int i = -1; i < 2; i+=2)
+//		{
+////			glBegin(GL_LINE_LOOP);
+//			glColor3f(0, 0, i > 0 ? 1 : 0.5);
+//			glVertex3f(-extensions.getX(), extensions.getY(), i * extensions.getZ());
+//			glVertex3f(extensions.getX(), extensions.getY(), i * extensions.getZ());
+//			glVertex3f(extensions.getX(), -extensions.getY(), i * extensions.getZ());
+//			glVertex3f(-extensions.getX(), -extensions.getY(), i * extensions.getZ());
+////			glEnd();
+//		}
+		glEnd();
+
 		return;
 	}
 
